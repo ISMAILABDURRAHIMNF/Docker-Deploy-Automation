@@ -4,25 +4,29 @@ from flask import Flask, request, jsonify
 import mysql.connector
 from dotenv import load_dotenv
 import os
+import bcrypt
 
 load_dotenv()
-
-db_host = os.getenv('DB_HOST')
-db_user = os.getenv('DB_USER')
-db_password = os.getenv('DB_PASSWORD')
-db_name = os.getenv('DB_NAME')
-
-conn = mysql.connector.connect(
-    host=db_host,
-    user=db_user,
-    password=db_password,
-    database=db_name
-    )
-
-cursor = conn.cursor()  
-
+  
 app = Flask(__name__)
 client = docker.from_env()
+
+def create_connection():
+    return mysql.connector.connect(
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME')
+    )
+
+def query_db(query, args=(), one=False):
+    conn = create_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(query, args)
+    result = cursor.fetchone() if one else cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return result
 
 def move_dir(app_name):
     shutil.move(f'/uploads/{app_name}', f'/docker/{app_name}')
@@ -75,17 +79,28 @@ def stop():
     stop_container(app_name)
     return jsonify({'message': 'App stopped successfully'})
 
-@app.route('/login', methods=['POST'])
-def login():
+@app.route('/register', methods=['POST'])
+def register():
     username = request.form['username']
     password = request.form['password']
 
-    query = f"SELECT * FROM users WHERE username = %s"
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-    cursor.execute(query, (username,))
-    result = cursor.fetchone()  
-    if username == result[username] and password == result[password]:
-        return jsonify({'message': 'Login successful'})
-    return jsonify({'message': 'Login failed'})
+    query_db('INSERT INTO users (username, password) VALUES (%s, %s)', (username, hashed_password))
+    
+    return jsonify({'message': 'User registered successfully'}), 201
 
-app.run(debug=True, host='127.0.0.1', port=8050)
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    username = request.form['username'] 
+    password = request.form['password']
+
+    user = query_db('SELECT * FROM users WHERE username = %s', (username,), one=True)
+
+    if user and bcrypt.checkpw(password.encode(), user['password'].encode('utf-8')):
+        return jsonify({'message': 'Login successful'}), 200
+    else:
+        return jsonify({'message': 'Invalid credentials'}), 401
+        
+app.run(debug=True, port=8050)
