@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from .deploy_docker import remove_dir, run_container, stop_container, remove_image, process
+from .query import query_db
 
 main = Blueprint('main', __name__)
 
@@ -32,3 +33,9 @@ def stop():
     app_name = request.form['app_name']
     stop_container(app_name)
     return jsonify({'message': 'App stopped successfully'})
+
+@main.route('/tes_db', methods=['GET'])
+def tes_db():
+    query = 'SELECT * FROM users'
+    result = query_db(query)
+    return jsonify({'message': 'tes_db', 'result': result})
