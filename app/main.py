@@ -41,6 +41,12 @@ def stop():
 
 @main.route('/tes_db', methods=['GET'])
 def tes_db():
-    query = 'SELECT * FROM user'
-    result = query_db(query)
-    return jsonify({'message': 'tes_db', 'result': result})
+    try:
+        print("Starting database query...")
+        query = 'desc akun;'
+        result = query_db(query)
+        print("Query result:", result)
+        return jsonify({'message': 'tes_db', 'result': result})
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'message': 'Error', 'error': str(e)}), 500

@@ -11,6 +11,6 @@ def register_user():
 
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-    query_db('INSERT INTO users (username, password) VALUES (%s, %s)', (username, hashed_password))
+    query_db('INSERT INTO akun (nama, password) VALUES (%s, %s)', (username, hashed_password))
     
     return jsonify({'message': 'User registered successfully'}), 201
