@@ -11,10 +11,13 @@ load_dotenv()
 
 login = Blueprint('login', __name__)
 
-@login.route('/login', methods=['GET','POST'])
+@login.route('/login', methods=['POST'])
 def login_user():
-    username = request.form['username'] 
-    password = request.form['password']
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    print(username, password)
 
     user = query_db('SELECT * FROM akun WHERE nama = %s', (username,), one=True)
 
@@ -24,7 +27,8 @@ def login_user():
             'user': username,
             'exp': datetime.now() + timedelta(minutes=30)
         }, os.getenv('SECRET_KEY') , algorithm="HS256")
-        return jsonify({'token': token}), 200
+        print(token)
+        return jsonify({'token': token, 'id': user['id']}), 200
     else:
         return jsonify({'message': 'Invalid credentials'}), 401
     

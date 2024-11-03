@@ -3,6 +3,7 @@ from .main import main
 from .register import register
 from .login import login
 from dotenv import load_dotenv
+from flask_cors import CORS
 import os
 
 load_dotenv()
@@ -12,6 +13,7 @@ def create_app():
 
     app.secret_key = os.getenv('SECRET_KEY')
     
+    CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
     app.register_blueprint(main)
     app.register_blueprint(register)
     app.register_blueprint(login)
