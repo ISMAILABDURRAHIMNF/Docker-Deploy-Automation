@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify, session
+from flask_cors import CORS
 from .query import query_db
 import bcrypt
 import jwt
@@ -10,6 +11,7 @@ import os
 load_dotenv()
 
 login = Blueprint('login', __name__)
+CORS(login, resources={r"/*": {"origins": "http://localhost:5173"}})
 
 @login.route('/login', methods=['POST'])
 def login_user():
@@ -19,7 +21,7 @@ def login_user():
 
     print(username, password)
 
-    user = query_db('SELECT * FROM akun WHERE nama = %s', (username,), one=True)
+    user = query_db('SELECT * FROM akun WHERE username = %s', (username,), one=True)
 
     if user and bcrypt.checkpw(password.encode(), user['password'].encode('utf-8')):
         # session['user'] = username

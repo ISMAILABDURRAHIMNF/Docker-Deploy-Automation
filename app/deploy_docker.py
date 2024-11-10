@@ -3,8 +3,10 @@ import docker
 
 client = docker.from_env()
 
+PATH = 'D:/Mini Project/File_Deploy/'
+
 def move_dir(app_name):
-    shutil.move(f'/uploads/{app_name}', f'/docker/{app_name}')
+    shutil.move(f'{PATH}/{app_name}', f'/docker/{app_name}')
 
 def remove_dir(app_name):
     shutil.rmtree(f'/docker/{app_name}')
