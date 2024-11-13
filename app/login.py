@@ -22,13 +22,14 @@ def login_user():
     print(username, password)
 
     user = query_db('SELECT * FROM akun WHERE username = %s', (username,), one=True)
+    
 
     if user and bcrypt.checkpw(password.encode(), user['password'].encode('utf-8')):
-        # session['user'] = username
         token = jwt.encode({
             'user': username,
             'exp': datetime.now() + timedelta(minutes=30)
         }, os.getenv('SECRET_KEY') , algorithm="HS256")
+        query_db('UPDATE akun SET login_token = %s WHERE username = %s', (token, username), one=True)
         print(token)
         return jsonify({'token': token, 'id': user['id']}), 200
     else:
