@@ -35,8 +35,10 @@ def login_user():
     else:
         return jsonify({'message': 'Invalid credentials'}), 401
     
-@login.route('/logout')
-@login_required
+@login.route('/logout', methods=['POST'])
+# @login_required
 def logout_user():
-    session.pop('user', None)
+    token = request.form.get('token')
+    print(token)
+    query_db('UPDATE akun SET login_token = NULL WHERE login_token = %s', (token,), one=True)
     return jsonify({'message': 'Logged out'}), 200
