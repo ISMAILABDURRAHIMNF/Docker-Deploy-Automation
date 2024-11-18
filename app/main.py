@@ -39,6 +39,15 @@ def stop():
     stop_container(app_name)
     return jsonify({'message': 'App stopped successfully'})
 
+@main.route('/get_docker_data', methods=['POST'])
+def check_image():
+    data = request.get_json()
+    token = data.get('token')
+    user_id = query_db('SELECT id FROM akun WHERE login_token = %s', (token,), one=True)['id']
+    docker_data = query_db('SELECT c.id_container, c.name, c.status, d.dockerfile FROM container c JOIN docker_data d ON c.docker_data_id=d.id_docker_data WHERE c.user_id = %s', (user_id,), one=False)
+    print(docker_data)
+    return jsonify({'docker_data': docker_data})
+
 @main.route('/tes_db', methods=['GET'])
 def tes_db():
     try:

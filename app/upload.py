@@ -18,6 +18,7 @@ def upload_file():
     
     file = request.files['file']
     token = request.form.get('token')
+    port = request.form.get('port')
 
     if file.filename == '':
         return jsonify({"error": "File tidak ada"}), 400
@@ -31,7 +32,7 @@ def upload_file():
         with zipfile.ZipFile(f'D:/Mini Project/File_Deploy/Folder_{app_name}/{file.filename}', 'r') as zip_ref:
             zip_ref.extractall(os.path.dirname(f'D:/Mini Project/File_Deploy/Folder_{app_name}/{file.filename}'))
 
-        process(app_name, token)
+        process(app_name, token, port)
 
         return jsonify({"message": "File berhasil di upload"}), 200
     
