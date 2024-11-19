@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from .deploy_docker import remove_dir, run_container, stop_container, remove_image, process
+from .deploy_docker import remove_dir, run_container, stop_container, remove_image, process, get_app_name, remove_container
 from .query import query_db
 from .decorator import login_required
 
@@ -17,12 +17,14 @@ def deploy():
     return jsonify({'message': 'App deployed successfully'})
 
 @main.route('/delete', methods=['POST'])
-@login_required
 def delete():
-    app_name = request.form['app_name']
-    stop_container(app_name)
+    id_container = request.get_json().get('id_container')
+    app_name = get_app_name(id_container)
+    remove_container(app_name)
     remove_image(app_name)
     remove_dir(app_name)
+    query_db('DELETE FROM container WHERE name = %s', (app_name,), one=True)
+    query_db('DELETE FROM docker_data WHERE docker_image = %s', (app_name,), one=True)
     return jsonify({'message': 'App deleted successfully'})
 
 @main.route('/start', methods=['POST'])
@@ -32,11 +34,14 @@ def start():
     run_container(app_name)
     return jsonify({'message': 'App started successfully'})
 
-@main.route('/stop', methods=['POST'])
-@login_required
+@main.route('/stop_container', methods=['POST'])
 def stop():
-    app_name = request.form['app_name']
+    id_container = request.get_json().get('id_container')
+    print(id_container)
+    app_name = get_app_name(id_container)
+    print(app_name)
     stop_container(app_name)
+    query_db("UPDATE container SET status = 'stop' WHERE id_container = %s", (id_container,), one=True)
     return jsonify({'message': 'App stopped successfully'})
 
 @main.route('/get_docker_data', methods=['POST'])
