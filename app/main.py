@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
-from .deploy_docker import remove_dir, run_container, stop_container, remove_image, process, get_app_name, remove_container
+from .deploy_docker import remove_dir, stop_container, remove_image, process, get_app_name, remove_container, start_container
 from .query import query_db
-from .decorator import login_required
 
 main = Blueprint('main', __name__)
 
@@ -10,7 +9,6 @@ def index():
     return jsonify({'message': 'Backend Docker Deploy Automation Standby!'})
 
 @main.route('/deploy', methods=['POST'])
-@login_required
 def deploy():
     app_name = request.form['app_name']
     process(app_name)
@@ -18,7 +16,7 @@ def deploy():
 
 @main.route('/delete', methods=['POST'])
 def delete():
-    id_container = request.get_json().get('id_container')
+    id_container = request.get_json().get('id')
     app_name = get_app_name(id_container)
     remove_container(app_name)
     remove_image(app_name)
@@ -27,21 +25,23 @@ def delete():
     query_db('DELETE FROM docker_data WHERE docker_image = %s', (app_name,), one=True)
     return jsonify({'message': 'App deleted successfully'})
 
-@main.route('/start', methods=['POST'])
-@login_required
+@main.route('/start_container', methods=['POST'])
 def start():
-    app_name = request.form['app_name']
-    run_container(app_name)
+    id_container = request.get_json().get('id')
+    print(id_container)
+    app_name = get_app_name(id_container)
+    start_container(app_name)
+    query_db("UPDATE container SET status = 'running' WHERE id = %s", (id_container,), one=True)
     return jsonify({'message': 'App started successfully'})
 
 @main.route('/stop_container', methods=['POST'])
 def stop():
-    id_container = request.get_json().get('id_container')
+    id_container = request.get_json().get('id')
     print(id_container)
     app_name = get_app_name(id_container)
     print(app_name)
     stop_container(app_name)
-    query_db("UPDATE container SET status = 'stop' WHERE id_container = %s", (id_container,), one=True)
+    query_db("UPDATE container SET status = 'stopped' WHERE id = %s", (id_container,), one=True)
     return jsonify({'message': 'App stopped successfully'})
 
 @main.route('/get_docker_data', methods=['POST'])
@@ -49,7 +49,7 @@ def check_image():
     data = request.get_json()
     token = data.get('token')
     user_id = query_db('SELECT id FROM akun WHERE login_token = %s', (token,), one=True)['id']
-    docker_data = query_db('SELECT c.id_container, c.name, c.status, d.dockerfile FROM container c JOIN docker_data d ON c.docker_data_id=d.id_docker_data WHERE c.user_id = %s', (user_id,), one=False)
+    docker_data = query_db('SELECT c.id, c.name, c.status, d.dockerfile FROM container c JOIN docker_data d ON c.docker_data_id=d.id WHERE c.user_id = %s', (user_id,), one=False)
     print(docker_data)
     return jsonify({'docker_data': docker_data})
 
