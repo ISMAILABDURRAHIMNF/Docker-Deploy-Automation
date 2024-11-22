@@ -22,7 +22,8 @@ def remove_dir(app_name):
     shutil.rmtree(f'{PATH}{app_name}')
 
 def build_image(app_name, docker_data_id, id_user):
-    query_db('INSERT INTO docker_data (id, docker_image) VALUES (%s, %s)', (docker_data_id,  app_name), one=True)
+    dockerfile = f"{PATH}{app_name}/Dockerfile"
+    query_db('INSERT INTO docker_data (id, dockerfile, docker_image) VALUES (%s, %s, %s)', (docker_data_id, dockerfile, app_name), one=True)
     query_db('INSERT INTO container (name, user_id, docker_data_id) VALUES (%s, %s, %s)', (app_name, id_user, docker_data_id), one=True)
     client.images.build(path=f'{PATH}{app_name}/', tag=app_name)
 
