@@ -33,8 +33,8 @@ def remove_image(app_name):
 def remove_container(app_name):
     client.containers.get(app_name).remove(force=True)
 
-def run_container(app_name, port):
-    client.containers.run(image=app_name, ports={port:port}, detach=True, name=app_name)
+def run_container(app_name, srcport, dstport):
+    client.containers.run(image=app_name, ports={srcport:dstport}, detach=True, name=app_name)
     query_db("UPDATE container SET status = 'running' WHERE name = %s", (app_name,), one=True)
 
 def start_container(app_name):
@@ -43,9 +43,9 @@ def start_container(app_name):
 def stop_container(app_name):
     client.containers.get(app_name).stop()
 
-def process(app_name, token, port):
+def process(app_name, token, srcport, dstport):
     count = count_docker_data()
     docker_data_id = f"D{count+1}"
     id_user = query_db('SELECT id FROM akun WHERE login_token = %s', (token,), one=True)['id']
     build_image(app_name, docker_data_id, id_user)
-    run_container(app_name, port)
+    run_container(app_name, srcport, dstport)
