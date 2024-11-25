@@ -35,7 +35,7 @@ def remove_container(app_name):
 
 def run_container(app_name, srcport, dstport):
     client.containers.run(image=app_name, ports={srcport:dstport}, detach=True, name=app_name)
-    query_db("UPDATE container SET status = 'running' WHERE name = %s", (app_name,), one=True)
+    query_db("UPDATE container SET status = 'running', srcport = %s, dstport = %s WHERE name = %s", (srcport, dstport, app_name), one=True)
 
 def start_container(app_name):
     client.containers.get(app_name).start()
