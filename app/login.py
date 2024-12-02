@@ -32,7 +32,7 @@ def login_user():
         print(token)
         return jsonify({'token': token, 'id': user['id']}), 200
     else:
-        return jsonify({'message': 'Invalid credentials'}), 401
+        return jsonify({'message': 'Username atau password invalid'}), 401
     
 @login.route('/logout', methods=['POST'])
 def logout_user():

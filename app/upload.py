@@ -3,11 +3,13 @@ from flask import Blueprint, request, jsonify
 from flask_cors import CORS
 import shutil
 from .decorator import login_required
-from .deploy_docker import process
+from .deploy_docker import process, check_app_slot
 from .query import query_db
 import zipfile
 
 upload = Blueprint('upload', __name__)
+
+PATH = os.getenv('DEPLOY_PATH')
 
 CORS(upload, resources={r"/*": {"origins": "http://localhost:5173"}})
 
@@ -29,13 +31,18 @@ def upload_file():
 
         app_name = file.filename.replace(".zip","")
 
-        shutil.move(file.filename,f'D:/Mini Project/File_Deploy/Folder_{app_name}/{file.filename}')
-        with zipfile.ZipFile(f'D:/Mini Project/File_Deploy/Folder_{app_name}/{file.filename}', 'r') as zip_ref:
-            zip_ref.extractall(os.path.dirname(f'D:/Mini Project/File_Deploy/Folder_{app_name}/{file.filename}'))
+        result_check = check_app_slot(app_name, dstport)
+        if result_check:
+            return jsonify({"message": "Nama aplikasi atau port sudah terpakai"}), 400
+
+        folder_deploy = f'{PATH}{app_name}'
+
+        shutil.move(file.filename,f'{folder_deploy}/{file.filename}')
+        with zipfile.ZipFile(f'{folder_deploy}/{file.filename}', 'r') as zip_ref:
+            zip_ref.extractall(os.path.dirname(f'{folder_deploy}/{file.filename}'))
 
         process(app_name, token, srcport, dstport)
 
         return jsonify({"message": "File berhasil di upload"}), 200
-    
     else:
-        return jsonify({"error": "Tipe file tidak valid, hanya diperbolehkan format zip"}), 400
+        return jsonify({"message": "Tipe file tidak valid, hanya diperbolehkan format zip"}), 400

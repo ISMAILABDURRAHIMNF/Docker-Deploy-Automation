@@ -49,7 +49,7 @@ def check_image():
     data = request.get_json()
     token = data.get('token')
     user_id = query_db('SELECT id FROM akun WHERE login_token = %s', (token,), one=True)['id']
-    docker_data = query_db('SELECT c.id, c.name, c.status, d.dockerfile FROM container c JOIN docker_data d ON c.docker_data_id=d.id WHERE c.user_id = %s', (user_id,), one=False)
+    docker_data = query_db('SELECT id, name, status FROM container WHERE user_id = %s', (user_id,), one=False)
     print(docker_data)
     return jsonify({'docker_data': docker_data})
 

@@ -1,10 +1,11 @@
+import os
 import shutil
 import docker
 from .query import query_db
 
 client = docker.from_env()
 
-PATH = 'D:/Mini Project/File_Deploy/Folder_'
+PATH = os.getenv('DEPLOY_PATH')
 
 def count_docker_data():
     docker_data = query_db('SELECT * FROM docker_data')
@@ -15,8 +16,9 @@ def get_app_name(id_container):
     app_name = query_db('SELECT name FROM container WHERE id = %s', (id_container,), one=True)['name']
     return app_name
 
-def move_dir(app_name):
-    shutil.move(PATH/app_name, f'/docker/{app_name}')
+def check_app_slot(app_name, dstport):
+    result = query_db('SELECT name FROM container WHERE name = %s OR dstport = %s', (app_name, dstport), one=True)
+    return result
 
 def remove_dir(app_name):
     shutil.rmtree(f'{PATH}{app_name}')
