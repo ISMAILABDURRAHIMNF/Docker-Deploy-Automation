@@ -2,16 +2,13 @@ import os
 from flask import Blueprint, request, jsonify
 from flask_cors import CORS
 import shutil
-from .decorator import login_required
 from .deploy_docker import process, check_app_slot
-from .query import query_db
 import zipfile
 
 upload = Blueprint('upload', __name__)
 
 PATH = os.getenv('DEPLOY_PATH')
 
-CORS(upload, resources={r"/*": {"origins": "http://localhost:5173"}})
 
 @upload.route('/upload_file', methods=['POST'])
 def upload_file():
@@ -24,7 +21,7 @@ def upload_file():
     dstport = request.form.get('dstport')
 
     if file.filename == '':
-        return jsonify({"error": "File tidak ada"}), 400
+        return jsonify({"message": "File tidak ada"}), 400
     
     if file and file.filename.endswith('.zip'):
         file.save(file.filename)

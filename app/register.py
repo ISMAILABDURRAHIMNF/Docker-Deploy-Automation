@@ -1,10 +1,8 @@
 from flask import Blueprint, request, jsonify
 from .query import query_db
 import bcrypt
-from flask_cors import CORS
 
 register = Blueprint('register', __name__)
-CORS(register, resources={r"/*": {"origins": "http://localhost:5173"}})
 
 @register.route('/register', methods=['POST'])
 def register_user():
