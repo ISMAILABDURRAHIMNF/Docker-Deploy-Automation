@@ -40,6 +40,6 @@ def upload_file():
 
         process(app_name, token, srcport, dstport)
 
-        return jsonify({"message": "File berhasil di upload"}), 200
+        return jsonify({"message": "Aplikasi berhasil di deploy"}), 200
     else:
         return jsonify({"message": "Tipe file tidak valid, hanya diperbolehkan format zip"}), 400
