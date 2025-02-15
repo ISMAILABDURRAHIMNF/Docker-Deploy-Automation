@@ -31,9 +31,9 @@ Create the `.env` file in the same directory as `main.py` using this variable.
 Use the program by running `main.py`
 
 ```bash
-  python main.py
+  python run.py
 ```
 
 ## ❗Warning !
 
-Make sure u already have an OpenAI API key and save it in the `.env` file.
+Make sure u already have an OpenAI API key and save it in the `.env` file. Make sure ur docker is running!
