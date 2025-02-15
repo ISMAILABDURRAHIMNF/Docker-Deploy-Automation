@@ -14,7 +14,7 @@ def create_app():
 
     app.secret_key = os.getenv('SECRET_KEY')
     
-    CORS(app, resources={r"/*": {"origins": "https://docker.deeployin.my.id"}})
+    CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
     app.register_blueprint(main)
     app.register_blueprint(register)
     app.register_blueprint(login)
