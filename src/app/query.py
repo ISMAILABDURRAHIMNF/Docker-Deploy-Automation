@@ -1,10 +1,14 @@
-from dotenv import load_dotenv
+"""Query function file"""
+
 import os
+from dotenv import load_dotenv
 import mysql.connector
 
 load_dotenv()
 
 def create_connection():
+    """Connect to database function"""
+
     connection =  mysql.connector.connect(
         host=os.getenv('DB_HOST'),
         user=os.getenv('DB_USER'),
@@ -16,18 +20,24 @@ def create_connection():
     return connection
 
 def query_db(query, args=(), one=False):
+    """Query tem"""
+
     try:
         conn = create_connection()
         cursor = conn.cursor(dictionary=True)
         cursor.execute(query, args)
-        
-        if query.strip().lower().startswith('insert') or query.strip().lower().startswith('update') or query.strip().lower().startswith('delete'):
+
+        if (
+            query.strip().lower().startswith("insert")
+            or query.strip().lower().startswith("update")
+            or query.strip().lower().startswith("delete")
+        ):
             conn.commit()
 
         result = cursor.fetchone() if one else cursor.fetchall()
         cursor.close()
         conn.close()
         return result
-    except Exception as e:
+    except mysql.connector.Error as e:
         print(f"Error in query_db: {e}")
         return None

@@ -1,0 +1,5 @@
+.git
+*.pyc
+.env
+__pycache__/
+/app/docker

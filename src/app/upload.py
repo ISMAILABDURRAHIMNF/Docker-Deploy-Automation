@@ -1,9 +1,10 @@
+"""Upload route file"""
+
 import os
-from flask import Blueprint, request, jsonify
-from flask_cors import CORS
 import shutil
-from .deploy_docker import process, check_app_slot
 import zipfile
+from flask import Blueprint, request, jsonify
+from .deploy_docker import process, check_app_slot
 
 upload = Blueprint('upload', __name__)
 
@@ -12,9 +13,11 @@ PATH = os.getenv('DEPLOY_PATH')
 
 @upload.route('/upload_file', methods=['POST'])
 def upload_file():
+    """Upload Function"""
+
     if 'file' not in request.files:
         return jsonify({"error": "File tidak ada"}), 400
-    
+
     file = request.files['file']
     token = request.form.get('token')
     srcport = request.form.get('srcport')
@@ -22,7 +25,7 @@ def upload_file():
 
     if file.filename == '':
         return jsonify({"message": "File tidak ada"}), 400
-    
+
     if file and file.filename.endswith('.zip'):
         file.save(file.filename)
 
@@ -41,5 +44,4 @@ def upload_file():
         process(app_name, token, srcport, dstport)
 
         return jsonify({"message": "Aplikasi berhasil di deploy"}), 200
-    else:
-        return jsonify({"message": "Tipe file tidak valid, hanya diperbolehkan format zip"}), 400
+    return jsonify({"message": "Tipe file tidak valid, hanya diperbolehkan format zip"}), 400
